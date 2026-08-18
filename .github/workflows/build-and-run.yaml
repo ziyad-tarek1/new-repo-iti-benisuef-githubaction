@@ -1,42 +1,31 @@
 # anything.yaml
-
-
-# optional: name of the workflow
 name: build-and-run
 
-# ON EVENTS 
 on:
-  push: # push to the repository
-    # branches:
-    #   - main
-    # paths:
-    #   - '*.md'
-#   pull_request: # pull request to the repository
-  workflow_dispatch: # manual trigger of the workflow
-#   schedule: # schedule the workflow to run at a specific time
-
-# JOBS
-
+  push:
+  workflow_dispatch:
 
 jobs:
   build-and-run:
-    runs-on: ubuntu-latest  # RUNNER  VM == Runner  vm109ddcmwicsi
+    runs-on: ubuntu-latest
+
     steps:
-        - name: checkout code # step 0
-          uses: actions/checkout@v7 # action
+        - name: checkout code
+          uses: actions/checkout@v4
 
-        - name: build the docker image # step 1
-          run: docker build -t my-app . # command
+        - name: build the docker image
+          run: docker build -t my-app .
 
-        - name: run the docker container # step 2
-          run: docker run -p 5000:5000 my-app # command
+        - name: run the docker container
+          run: docker run -d -p 5000:5000 --name my-app my-app
 
-        - name: test the application # step 3
-          run: curl http://localhost:5000 # command
+        - name: test the application
+          run: |
+            sleep 3
+            curl http://localhost:5000
 
-        # # optional: stop and remove the docker container cleanup
-        # - name: stop the docker container # step 4
-        #   run: docker stop my-app # command
-
-        # - name: remove the docker container # step 5
-        #   run: docker rm my-app # command
+        - name: cleanup container
+          if: always()
+          run: |
+            docker stop my-app || true
+            docker rm my-app || true
